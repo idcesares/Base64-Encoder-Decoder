@@ -1,40 +1,58 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Base64 Encoder/Decoder
 
-## Getting Started
+This is a simple React-based web application that provides a user-friendly interface for encoding and decoding text to and from Base64 format. The app utilizes the `btoa()` and `atob()` JavaScript functions for the core encoding and decoding operations.
 
-First, run the development server:
+### Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* **Toggle between Encode and Decode modes:** A visually appealing toggle switch allows users to seamlessly switch between encoding and decoding functionalities.
+* **Real-time input and output:** The app provides instant feedback, displaying the encoded or decoded result as the user types or pastes their input.
+* **Loading indicator:** A loading animation provides visual feedback during the encoding/decoding process, enhancing the user experience.
+* **Error handling:** The app gracefully handles invalid Base64 input during decoding, displaying a clear error message.
+* **Responsive design:** The app is designed to work well on various screen sizes, ensuring accessibility across different devices.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Getting Started
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+1. **Clone the repository:**
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+   ```bash
+   git clone https://github.com/your-username/base64-encoder-decoder.git
+   ```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+2. **Install dependencies:**
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   ```bash
+   cd base64-encoder-decoder
+   npm install
+   ```
 
-## Learn More
+3. **Run the development server:**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Open in your browser:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+   The app should now be running at `http://localhost:3000`.
 
-## Deploy on Vercel
+### Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Select mode:** Choose whether you want to encode or decode text using the toggle switch.
+2. **Enter input:** Type or paste your text or Base64 string into the input area.
+3. **Click the button:** Click the "Encode" or "Decode" button to perform the desired operation.
+4. **View the result:** The encoded or decoded output will be displayed in the result area.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Dependencies
+
+* **React:** The core JavaScript library for building user interfaces.
+* **@radix-ui/react-switch:** A library providing accessible and customizable switch components.
+* **lucide-react:** A collection of beautifully simple icons.
+* **next/head:** A Next.js component for managing the head section of your pages.
+
+### Contributing
+
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
+
+### License
+
+This project is licensed under the MIT License.
