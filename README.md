@@ -15,7 +15,7 @@ This is a simple React-based web application that provides a user-friendly inter
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/base64-encoder-decoder.git
+   git clone https://github.com/idcesares/Base64-Encoder-Decoder.git
    ```
 
 2. **Install dependencies:**
@@ -47,7 +47,6 @@ This is a simple React-based web application that provides a user-friendly inter
 * **React:** The core JavaScript library for building user interfaces.
 * **@radix-ui/react-switch:** A library providing accessible and customizable switch components.
 * **lucide-react:** A collection of beautifully simple icons.
-* **next/head:** A Next.js component for managing the head section of your pages.
 
 ### Contributing
 
