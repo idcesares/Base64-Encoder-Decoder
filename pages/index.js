@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import * as Switch from '@radix-ui/react-switch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Copy } from 'lucide-react';
 import Head from 'next/head';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {
 
@@ -37,6 +39,11 @@ export default function Home() {
       }
       setIsLoading(false);
     }, 500); // Simulate processing time
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output);
+    toast.success('Copied to clipboard');
   };
 
   return (
@@ -98,8 +105,14 @@ export default function Home() {
         {output && (
           <div className="mt-6 animate-fadeIn">
             <h2 className="text-lg font-semibold mb-2 text-indigo-600">Result:</h2>
-            <div className="bg-indigo-50 p-3 rounded-md min-h-[60px] break-all border border-indigo-200">
+            <div className="bg-indigo-50 p-3 rounded-md min-h-[60px] break-all border border-indigo-200 relative">
               {output}
+              <button 
+                onClick={handleCopy} 
+                className="absolute top-2 right-2 p-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
             </div>
           </div>
         )}
@@ -109,5 +122,6 @@ export default function Home() {
       </div>
     </div>
     </main>
+    <ToastContainer />
     </>
 );}
