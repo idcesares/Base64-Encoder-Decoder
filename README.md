@@ -1,14 +1,16 @@
 ## Base64 Encoder/Decoder
 
-This is a simple React-based web application that provides a user-friendly interface for encoding and decoding text to and from Base64 format. The app utilizes the `btoa()` and `atob()` JavaScript functions for the core encoding and decoding operations.
+This is a simple React-based web application that provides a user-friendly interface for encoding and decoding text to and from Base64 format. The app now supports full Unicode input using custom encoding utilities and exposes a server API for processing large payloads.
 
 ### Features
 
 * **Toggle between Encode and Decode modes:** A visually appealing toggle switch allows users to seamlessly switch between encoding and decoding functionalities.
 * **Real-time input and output:** The app provides instant feedback, displaying the encoded or decoded result as the user types or pastes their input.
+* **Unicode support:** Text is encoded/decoded with full Unicode compatibility.
+* **Server API:** Send POST requests to `/api/base64` to encode or decode data on the server.
 * **Loading indicator:** A loading animation provides visual feedback during the encoding/decoding process, enhancing the user experience.
 * **Error handling:** The app gracefully handles invalid Base64 input during decoding, displaying a clear error message.
-* **Responsive design:** The app is designed to work well on various screen sizes, ensuring accessibility across different devices.
+* **Responsive and accessible design:** Keyboard focus outlines and ARIA attributes help ensure accessibility across different devices.
 
 ### Getting Started
 
@@ -47,6 +49,14 @@ This is a simple React-based web application that provides a user-friendly inter
 * **React:** The core JavaScript library for building user interfaces.
 * **@radix-ui/react-switch:** A library providing accessible and customizable switch components.
 * **lucide-react:** A collection of beautifully simple icons.
+
+### Testing
+
+Run the Jest test suite with:
+
+```bash
+npm test
+```
 
 ### Contributing
 

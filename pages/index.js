@@ -4,6 +4,7 @@ import { Loader2, Copy, AlertCircle } from 'lucide-react';
 import Head from 'next/head';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { encodeBase64, decodeBase64 } from '../utils/base64';
 
 export default function Home() {
   const title = "Base64 Encoder/Decoder | Free Online Tool";
@@ -58,9 +59,9 @@ export default function Home() {
     setTimeout(() => {
       try {
         if (isEncoding) {
-          setOutput(btoa(input));
+          setOutput(encodeBase64(input));
         } else {
-          setOutput(atob(input));
+          setOutput(decodeBase64(input));
         }
       } catch (error) {
         if (!isEncoding) {
@@ -152,10 +153,13 @@ export default function Home() {
             {output && (
               <div className="mt-6 animate-fadeIn">
                 <h2 className={`text-lg font-semibold mb-2 ${accentTextColor} transition-colors duration-300`}>Result:</h2>
-                <div className={`${resultBg} p-3 rounded-md min-h-[60px] break-all border relative transition-colors duration-300`}>
+                <div
+                  className={`${resultBg} p-3 rounded-md min-h-[60px] break-all border relative transition-colors duration-300`}
+                  aria-live="polite"
+                >
                   {output}
-                  <button 
-                    onClick={handleCopy} 
+                  <button
+                    onClick={handleCopy}
                     className={`absolute top-2 right-2 p-1 text-white rounded-full hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300 ${copyButtonBg}`}
                     aria-label="Copy to clipboard"
                   >
