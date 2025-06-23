@@ -74,6 +74,8 @@ This project is licensed under the MIT License.
 
 This project applies common search engine optimization (SEO) patterns including descriptive meta tags and structured data. The code is also formatted to help generative engines (GEO) understand the content. Results may vary and no ranking is guaranteed.
 
+The site now includes a `robots.txt` file to guide crawlers and a `sitemap.xml` for better page discovery. Both files live in the `public/` directory and are served from the site root.
+
 ### Author
 
 [Isaac D'Césares](https://dcesares.dev)
