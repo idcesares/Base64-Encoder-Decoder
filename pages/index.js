@@ -93,7 +93,32 @@ export default function Home() {
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="keywords" content="base64, encoder, decoder, online tool, text conversion" />
-      </Head>
+    <meta name="author" content="Isaac D&apos;C&eacute;sares" />
+    <link rel="canonical" href="https://base64.dcesares.dev/" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://base64.dcesares.dev/" />
+    <meta property="og:image" content="/next.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                name: "Base64 Encoder/Decoder",
+                url: "https://base64.dcesares.dev/",
+                author: {
+                  "@type": "Person",
+                  name: "Isaac D'Césares",
+                  url: "https://dcesares.dev",
+                },
+              }),
+            }}
+          />
+  </Head>
       <main>
         <div className={`min-h-screen bg-gradient-to-br ${bgGradient} transition-all duration-500 ease-in-out flex flex-col items-center justify-center p-4`}>
           <div className={`bg-white rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 mb-4 transition-all duration-300 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}>

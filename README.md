@@ -2,6 +2,10 @@
 
 This is a simple React-based web application that provides a user-friendly interface for encoding and decoding text to and from Base64 format. The app now supports full Unicode input using custom encoding utilities and exposes a server API for processing large payloads.
 
+### Official Website
+
+[https://base64.dcesares.dev/](https://base64.dcesares.dev/)
+
 ### Features
 
 * **Toggle between Encode and Decode modes:** A visually appealing toggle switch allows users to seamlessly switch between encoding and decoding functionalities.
@@ -65,3 +69,15 @@ Contributions are welcome! If you find any issues or have suggestions for improv
 ### License
 
 This project is licensed under the MIT License.
+
+### SEO and GEO
+
+This project applies common search engine optimization (SEO) patterns including descriptive meta tags and structured data. The code is also formatted to help generative engines (GEO) understand the content. Results may vary and no ranking is guaranteed.
+
+### Author
+
+[Isaac D'Césares](https://dcesares.dev)
+
+### Disclaimer
+
+This tool is provided for educational purposes. There is no guarantee of performance for SEO or GEO techniques. Use it at your own risk.

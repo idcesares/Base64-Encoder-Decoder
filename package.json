@@ -28,5 +28,6 @@
     "jest": "^29.7.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17"
-  }
+  },
+  "author": "Isaac D'Césares <https://dcesares.dev>"
 }
