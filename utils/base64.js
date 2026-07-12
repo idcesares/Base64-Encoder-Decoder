@@ -1,32 +1,48 @@
-export function encodeBase64(text) {
-  try {
-    if (typeof window === 'undefined') {
-      return Buffer.from(text, 'utf-8').toString('base64');
-    } else {
-      return btoa(
-        encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, (_, p1) =>
-          String.fromCharCode('0x' + p1)
-        )
-      );
-    }
-  } catch {
-    return '';
+function bytesToBase64(bytes) {
+  if (typeof window === 'undefined') {
+    return Buffer.from(bytes).toString('base64');
   }
+
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return window.btoa(binary);
+}
+
+function base64ToBytes(value) {
+  const normalized = value.replace(/\s/g, '');
+  if (!normalized || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(normalized)) {
+    throw new Error('Invalid Base64 format');
+  }
+
+  if (typeof window === 'undefined') {
+    return new Uint8Array(Buffer.from(normalized, 'base64'));
+  }
+
+  const binary = window.atob(normalized);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+export function encodeBase64(text) {
+  return bytesToBase64(new TextEncoder().encode(text));
 }
 
 export function decodeBase64(base64) {
   try {
-    if (typeof window === 'undefined') {
-      return Buffer.from(base64, 'base64').toString('utf-8');
-    } else {
-      return decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-    }
+    return new TextDecoder('utf-8', { fatal: true }).decode(base64ToBytes(base64));
   } catch {
-    return '';
+    throw new Error('Invalid Base64 format');
   }
+}
+
+export function toUrlSafeBase64(value) {
+  return value.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+export function fromUrlSafeBase64(value) {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
+  const padding = normalized.length % 4;
+  if (padding === 1) throw new Error('Invalid Base64 format');
+  return normalized + '='.repeat((4 - padding) % 4);
 }

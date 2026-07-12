@@ -26,3 +26,10 @@ describe('API base64 handler', () => {
     expect(res.jsonPayload.result).toBe('test');
   });
 });
+
+it('returns an actionable error for malformed input', () => {
+  const { req, res } = createMocks({ body: { text: 'not valid!', action: 'decode' } });
+  handler(req, res);
+  expect(res.statusCode).toBe(422);
+  expect(res.jsonPayload.error).toBe('Invalid Base64 input');
+});
