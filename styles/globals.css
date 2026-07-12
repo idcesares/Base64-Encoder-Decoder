@@ -2,21 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+html { scroll-behavior: smooth; }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
+body { margin: 0; background: #09090b; }
 
 @layer utilities {
   .text-balance {
@@ -24,12 +12,17 @@ body {
   }
 }
 
-/* Add animation for fade-in */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.icon-button {
+  display: grid;
+  height: 1.9rem;
+  width: 1.9rem;
+  place-items: center;
+  border-radius: .5rem;
+  color: #a1a1aa;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out;
+.icon-button:hover {
+  background: rgba(255, 255, 255, .08);
+  color: white;
 }
