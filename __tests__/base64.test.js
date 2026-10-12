@@ -17,3 +17,19 @@ it('converts URL-safe Base64', () => {
 it('rejects malformed Base64', () => {
   expect(() => decodeBase64('not valid!')).toThrow('Invalid Base64 format');
 });
+
+it('round-trips emoji and empty-adjacent edge cases', () => {
+  expect(decodeBase64(encodeBase64('Hello, world! 🌍'))).toBe('Hello, world! 🌍');
+  expect(encodeBase64('')).toBe('');
+});
+
+it('ignores whitespace and rejects bad padding or invalid UTF-8', () => {
+  expect(decodeBase64('dGVz\n dA==')).toBe('test');
+  expect(() => decodeBase64('dGVzdA=')).toThrow('Invalid Base64 format');
+  expect(() => decodeBase64('/w==')).toThrow('Invalid Base64 format');
+  expect(() => decodeBase64('')).toThrow('Invalid Base64 format');
+});
+
+it('rejects impossible URL-safe lengths', () => {
+  expect(() => fromUrlSafeBase64('A')).toThrow('Invalid Base64 format');
+});

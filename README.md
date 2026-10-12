@@ -8,11 +8,10 @@ This is a simple React-based web application that provides a user-friendly inter
 
 ### Features
 
-* **Toggle between Encode and Decode modes:** A visually appealing toggle switch allows users to seamlessly switch between encoding and decoding functionalities.
+* **Encode / Decode modes** with a one-click direction swap and URL-safe Base64 option.
 * **Real-time input and output:** The app provides instant feedback, displaying the encoded or decoded result as the user types or pastes their input.
 * **Unicode support:** Text is encoded/decoded with full Unicode compatibility.
-* **Server API:** Send POST requests to `/api/base64` to encode or decode data on the server.
-* **Loading indicator:** A loading animation provides visual feedback during the encoding/decoding process, enhancing the user experience.
+* **Server API:** Send POST requests to `/api/base64` with `{ text, action: "encode" | "decode", urlSafe?: boolean }`.
 * **Error handling:** The app gracefully handles invalid Base64 input during decoding, displaying a clear error message.
 * **Responsive and accessible design:** Keyboard focus outlines and ARIA attributes help ensure accessibility across different devices.
 
@@ -27,14 +26,14 @@ This is a simple React-based web application that provides a user-friendly inter
 2. **Install dependencies:**
 
    ```bash
-   cd base64-encoder-decoder
-   npm install
+   cd Base64-Encoder-Decoder
+   pnpm install
    ```
 
 3. **Run the development server:**
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 4. **Open in your browser:**
@@ -43,23 +42,24 @@ This is a simple React-based web application that provides a user-friendly inter
 
 ### Usage
 
-1. **Select mode:** Choose whether you want to encode or decode text using the toggle switch.
-2. **Enter input:** Type or paste your text or Base64 string into the input area.
-3. **Click the button:** Click the "Encode" or "Decode" button to perform the desired operation.
-4. **View the result:** The encoded or decoded output will be displayed in the result area.
+1. **Select mode:** Choose *Encode* or *Decode*, and optionally enable URL-safe Base64.
+2. **Enter input:** Type, paste, or import a text file (up to 1 MB).
+3. **View the result:** The output updates instantly as you type.
+4. **Copy or download:** Use the buttons (or Ctrl/⌘ + Enter to download). Recent work is kept locally in your browser.
 
 ### Dependencies
 
-* **React:** The core JavaScript library for building user interfaces.
-* **@radix-ui/react-switch:** A library providing accessible and customizable switch components.
-* **lucide-react:** A collection of beautifully simple icons.
+* **Next.js / React:** Application framework and UI library.
+* **Tailwind CSS:** Styling.
+* **lucide-react:** Icons.
+* **@vercel/analytics:** Page analytics.
 
 ### Testing
 
 Run the Jest test suite with:
 
 ```bash
-npm test
+pnpm test
 ```
 
 ### Contributing

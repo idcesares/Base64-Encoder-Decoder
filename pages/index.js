@@ -21,6 +21,7 @@ import {
 
 const EXAMPLE = 'Hello, world! 🌍';
 const HISTORY_KEY = 'base64-workbench-history';
+const HISTORY_MAX_INPUT = 2000;
 
 function getByteCount(value) {
   return new TextEncoder().encode(value).length;
@@ -39,9 +40,11 @@ export default function Home() {
   useEffect(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem(HISTORY_KEY) || '[]');
-      if (Array.isArray(saved)) setHistory(saved.slice(0, 5));
+      if (Array.isArray(saved)) {
+        setHistory(saved.filter((entry) => entry && typeof entry.input === 'string' && (entry.mode === 'encode' || entry.mode === 'decode')).slice(0, 5));
+      }
     } catch {
-      window.localStorage.removeItem(HISTORY_KEY);
+      /* storage unavailable or corrupted; start with an empty history */
     }
   }, []);
 
@@ -66,10 +69,15 @@ export default function Home() {
 
   const saveToHistory = useCallback(() => {
     if (!input || !output) return;
-    const item = { mode, input: input.slice(0, 140), output: output.slice(0, 140), id: Date.now() };
+    if (input.length > HISTORY_MAX_INPUT) return;
+    const item = { mode, input, id: Date.now() };
     const nextHistory = [item, ...history.filter((entry) => entry.input !== item.input || entry.mode !== item.mode)].slice(0, 5);
     setHistory(nextHistory);
-    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+    try {
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+    } catch {
+      /* history is best-effort */
+    }
   }, [history, input, mode, output]);
 
   const handleCopy = async () => {
@@ -133,6 +141,11 @@ export default function Home() {
     <>
       <Head>
         <title>Base64 Workbench — Encode, Decode, Ship</title>
+        <link rel="canonical" href="https://base64.dcesares.dev/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Base64 Workbench — Encode, Decode, Ship" />
+        <meta property="og:description" content="A fast, private Base64 workbench for text, files, URL-safe encoding, and copy-ready results." />
+        <meta property="og:url" content="https://base64.dcesares.dev/" />
         <meta name="description" content="A fast, private Base64 workbench for text, files, URL-safe encoding, and copy-ready results." />
         <meta name="theme-color" content="#09090b" />
       </Head>
@@ -158,7 +171,7 @@ export default function Home() {
             <section id="workbench" className="rounded-3xl border border-white/10 bg-zinc-900/75 p-4 shadow-2xl shadow-black/30 backdrop-blur sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex rounded-xl bg-black/25 p-1">
-                  {['encode', 'decode'].map((item) => <button key={item} onClick={() => switchMode(item)} className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition ${mode === item ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-400 hover:text-white'}`}>{item}</button>)}
+                  {['encode', 'decode'].map((item) => <button key={item} onClick={() => switchMode(item)} aria-pressed={mode === item} className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition ${mode === item ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-400 hover:text-white'}`}>{item}</button>)}
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-400"><input type="checkbox" checked={urlSafe} onChange={(event) => setUrlSafe(event.target.checked)} className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-teal-400 focus:ring-teal-400" /> URL-safe Base64</label>
               </div>
@@ -166,11 +179,11 @@ export default function Home() {
               <div className="grid gap-4 lg:grid-cols-2">
                 <Panel label={mode === 'encode' ? 'Plain text' : 'Base64 input'} meta={`${input.length.toLocaleString()} characters · ${getByteCount(input).toLocaleString()} bytes`}>
                   <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === 'encode' ? 'Write or paste text here…' : 'Paste Base64 here…'} className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Input" />
-                  <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><button onClick={() => setInput(EXAMPLE)} className="text-xs text-teal-300 hover:text-teal-200">Use example</button><div className="flex gap-1"><button onClick={() => fileInputRef.current?.click()} className="icon-button" title="Import text file"><Upload size={15} /></button><button onClick={reset} className="icon-button" title="Clear input"><X size={15} /></button></div><input ref={fileInputRef} type="file" accept="text/plain,.txt,.csv,.json,.xml" className="hidden" onChange={(event) => loadFile(event.target.files?.[0])} /></div>
+                  <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><button onClick={() => setInput(EXAMPLE)} className="text-xs text-teal-300 hover:text-teal-200">Use example</button><div className="flex gap-1"><button onClick={() => fileInputRef.current?.click()} className="icon-button" title="Import text file" aria-label="Import text file"><Upload size={15} /></button><button onClick={reset} className="icon-button" title="Clear input" aria-label="Clear input"><X size={15} /></button></div><input ref={fileInputRef} type="file" accept="text/plain,.txt,.csv,.json,.xml" className="hidden" onChange={(event) => loadFile(event.target.files?.[0])} /></div>
                 </Panel>
                 <Panel label={mode === 'encode' ? 'Base64 output' : 'Decoded text'} meta={output ? `${output.length.toLocaleString()} characters` : 'Ready when you are'}>
                   <textarea value={output} readOnly placeholder="Your result appears here instantly…" className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Result" />
-                  <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><span className="text-xs text-zinc-500">⌘/Ctrl + Enter to download</span><div className="flex gap-1"><button onClick={handleSave} disabled={!output} className="icon-button disabled:opacity-30" title="Download result"><Download size={15} /></button><button onClick={handleCopy} disabled={!output} className="icon-button disabled:opacity-30" title="Copy result">{copied ? <Check size={15} className="text-teal-300" /> : <Clipboard size={15} />}</button></div></div>
+                  <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><span className="text-xs text-zinc-500">⌘/Ctrl + Enter to download</span><div className="flex gap-1"><button onClick={handleSave} disabled={!output} className="icon-button disabled:opacity-30" title="Download result" aria-label="Download result"><Download size={15} /></button><button onClick={handleCopy} disabled={!output} className="icon-button disabled:opacity-30" title="Copy result" aria-label="Copy result">{copied ? <Check size={15} className="text-teal-300" /> : <Clipboard size={15} />}</button></div></div>
                 </Panel>
               </div>
 
@@ -180,7 +193,7 @@ export default function Home() {
           </section>
 
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[.03] p-4 sm:p-5">
-            <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-medium"><History size={16} className="text-teal-300" /> Recent work</div>{history.length > 0 && <button onClick={() => { setHistory([]); window.localStorage.removeItem(HISTORY_KEY); }} className="text-xs text-zinc-500 hover:text-white"><RotateCcw size={13} className="mr-1 inline" /> Clear</button>}</div>
+            <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-medium"><History size={16} className="text-teal-300" /> Recent work</div>{history.length > 0 && <button onClick={() => { setHistory([]); try { window.localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ } }} className="text-xs text-zinc-500 hover:text-white"><RotateCcw size={13} className="mr-1 inline" /> Clear</button>}</div>
             {history.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{history.map((entry) => <button key={entry.id} onClick={() => { setMode(entry.mode); setInput(entry.input); }} className="rounded-xl border border-white/5 bg-black/15 p-3 text-left transition hover:border-teal-300/30 hover:bg-white/5"><span className="block text-xs capitalize text-teal-300">{entry.mode}</span><span className="mt-1 block truncate font-mono text-xs text-zinc-400">{entry.input}</span></button>)}</div> : <p className="text-sm text-zinc-500">Copy or download a result and it will appear here. Your history stays on this device.</p>}
           </section>
           <footer className="flex flex-wrap justify-between gap-3 py-3 text-xs text-zinc-600"><span>Built for quick, private transformations.</span><a className="hover:text-zinc-300" href="https://dcesares.dev" target="_blank" rel="noreferrer">dcesares.dev</a></footer>

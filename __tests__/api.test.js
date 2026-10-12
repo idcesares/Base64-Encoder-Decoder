@@ -33,3 +33,21 @@ it('returns an actionable error for malformed input', () => {
   expect(res.statusCode).toBe(422);
   expect(res.jsonPayload.error).toBe('Invalid Base64 input');
 });
+
+it('rejects non-POST methods and bad payloads', () => {
+  let { req, res } = createMocks({ method: 'GET' });
+  handler(req, res);
+  expect(res.statusCode).toBe(405);
+  ({ req, res } = createMocks({ body: { text: 1, action: 'encode' } }));
+  handler(req, res);
+  expect(res.statusCode).toBe(400);
+});
+
+it('supports URL-safe mode', () => {
+  let { req, res } = createMocks({ body: { text: '??>>', action: 'encode', urlSafe: true } });
+  handler(req, res);
+  expect(res.jsonPayload.result).toBe('Pz8-Pg');
+  ({ req, res } = createMocks({ body: { text: 'Pz8-Pg', action: 'decode', urlSafe: true } }));
+  handler(req, res);
+  expect(res.jsonPayload.result).toBe('??>>');
+});
