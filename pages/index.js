@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
 import {
   ArrowLeftRight,
@@ -12,73 +12,36 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import {
-  decodeBase64,
-  encodeBase64,
-  fromUrlSafeBase64,
-  toUrlSafeBase64,
-} from '../utils/base64';
+import Panel from '../components/Panel';
+import About from '../components/About';
+import { useHistory } from '../hooks/useHistory';
+import { convert, getByteCount } from '../utils/convert';
 
 const EXAMPLE = 'Hello, world! 🌍';
-const HISTORY_KEY = 'base64-workbench-history';
-const HISTORY_MAX_INPUT = 2000;
-
-function getByteCount(value) {
-  return new TextEncoder().encode(value).length;
-}
 
 export default function Home() {
   const [mode, setMode] = useState('encode');
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState('');
   const [urlSafe, setUrlSafe] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [notice, setNotice] = useState('');
+  const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const { history, add: addToHistory, clear: clearHistory } = useHistory();
 
-  useEffect(() => {
+  const { output, conversionError } = useMemo(() => {
+    if (!input) return { output: '', conversionError: '' };
     try {
-      const saved = JSON.parse(window.localStorage.getItem(HISTORY_KEY) || '[]');
-      if (Array.isArray(saved)) {
-        setHistory(saved.filter((entry) => entry && typeof entry.input === 'string' && (entry.mode === 'encode' || entry.mode === 'decode')).slice(0, 5));
-      }
+      return { output: convert(input, { mode, urlSafe }), conversionError: '' };
     } catch {
-      /* storage unavailable or corrupted; start with an empty history */
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!input) {
-      setOutput('');
-      setError('');
-      return;
-    }
-
-    try {
-      const result = mode === 'encode'
-        ? (urlSafe ? toUrlSafeBase64(encodeBase64(input)) : encodeBase64(input))
-        : decodeBase64(urlSafe ? fromUrlSafeBase64(input) : input);
-      setOutput(result);
-      setError('');
-    } catch {
-      setOutput('');
-      setError('This does not look like valid Base64. Check the input and try again.');
+      return { output: '', conversionError: 'This does not look like valid Base64. Check the input and try again.' };
     }
   }, [input, mode, urlSafe]);
+  const error = conversionError || notice;
 
   const saveToHistory = useCallback(() => {
-    if (!input || !output) return;
-    if (input.length > HISTORY_MAX_INPUT) return;
-    const item = { mode, input, id: Date.now() };
-    const nextHistory = [item, ...history.filter((entry) => entry.input !== item.input || entry.mode !== item.mode)].slice(0, 5);
-    setHistory(nextHistory);
-    try {
-      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
-    } catch {
-      /* history is best-effort */
-    }
-  }, [history, input, mode, output]);
+    if (output) addToHistory({ mode, input });
+  }, [addToHistory, input, mode, output]);
 
   const handleCopy = async () => {
     if (!output) return;
@@ -88,7 +51,7 @@ export default function Home() {
       saveToHistory();
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      setError('Clipboard access is unavailable. Select the result and copy it manually.');
+      setNotice('Clipboard access is unavailable. Select the result and copy it manually.');
     }
   };
 
@@ -114,12 +77,12 @@ export default function Home() {
   const loadFile = (file) => {
     if (!file) return;
     if (file.size > 1024 * 1024) {
-      setError('For a quick browser experience, choose a text file smaller than 1 MB.');
+      setNotice('For a quick browser experience, choose a text file smaller than 1 MB.');
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => setInput(String(reader.result || ''));
-    reader.onerror = () => setError('We could not read that file.');
+    reader.onload = () => { setNotice(''); setInput(String(reader.result || '')); };
+    reader.onerror = () => setNotice('We could not read that file.');
     reader.readAsText(file);
   };
 
@@ -127,14 +90,18 @@ export default function Home() {
     if (nextMode === mode) return;
     setMode(nextMode);
     setInput(output || '');
-    setOutput('');
-    setError('');
+    setNotice('');
+  };
+
+  const swap = () => {
+    setInput(output || input);
+    setMode(mode === 'encode' ? 'decode' : 'encode');
+    setNotice('');
   };
 
   const reset = () => {
     setInput('');
-    setOutput('');
-    setError('');
+    setNotice('');
   };
 
   return (
@@ -168,41 +135,38 @@ export default function Home() {
               <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm text-zinc-400"><span>✓ Unicode ready</span><span>✓ URL-safe mode</span><span>✓ Download results</span></div>
             </div>
 
-            <section id="workbench" className="rounded-3xl border border-white/10 bg-zinc-900/75 p-4 shadow-2xl shadow-black/30 backdrop-blur sm:p-6">
+            <section id="workbench" onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); loadFile(event.dataTransfer.files?.[0]); }} className={`rounded-3xl ${dragging ? 'ring-2 ring-teal-300/60 ' : ''} border border-white/10 bg-zinc-900/75 p-4 shadow-2xl shadow-black/30 backdrop-blur transition sm:p-6`}>
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex rounded-xl bg-black/25 p-1">
-                  {['encode', 'decode'].map((item) => <button key={item} onClick={() => switchMode(item)} aria-pressed={mode === item} className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition ${mode === item ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-400 hover:text-white'}`}>{item}</button>)}
+                  {['encode', 'decode'].map((item) => <button key={item} onClick={() => switchMode(item)} aria-pressed={mode === item} className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition focus-visible:outline-2 focus-visible:outline-teal-300 ${mode === item ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-400 hover:text-white'}`}>{item}</button>)}
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-400"><input type="checkbox" checked={urlSafe} onChange={(event) => setUrlSafe(event.target.checked)} className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-teal-400 focus:ring-teal-400" /> URL-safe Base64</label>
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
                 <Panel label={mode === 'encode' ? 'Plain text' : 'Base64 input'} meta={`${input.length.toLocaleString()} characters · ${getByteCount(input).toLocaleString()} bytes`}>
-                  <textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === 'encode' ? 'Write or paste text here…' : 'Paste Base64 here…'} className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Input" />
+                  <textarea value={input} onChange={(event) => { setInput(event.target.value); setNotice(''); }} placeholder={mode === 'encode' ? 'Write or paste text here…' : 'Paste Base64 here…'} className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Input" />
                   <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><button onClick={() => setInput(EXAMPLE)} className="text-xs text-teal-300 hover:text-teal-200">Use example</button><div className="flex gap-1"><button onClick={() => fileInputRef.current?.click()} className="icon-button" title="Import text file" aria-label="Import text file"><Upload size={15} /></button><button onClick={reset} className="icon-button" title="Clear input" aria-label="Clear input"><X size={15} /></button></div><input ref={fileInputRef} type="file" accept="text/plain,.txt,.csv,.json,.xml" className="hidden" onChange={(event) => loadFile(event.target.files?.[0])} /></div>
                 </Panel>
                 <Panel label={mode === 'encode' ? 'Base64 output' : 'Decoded text'} meta={output ? `${output.length.toLocaleString()} characters` : 'Ready when you are'}>
-                  <textarea value={output} readOnly placeholder="Your result appears here instantly…" className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Result" />
+                  <textarea value={output} readOnly placeholder="Your result appears here instantly…" className="min-h-[250px] w-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600" aria-label="Result" onFocus={(event) => event.target.select()} />
                   <div className="flex items-center justify-between border-t border-white/5 px-3 py-2"><span className="text-xs text-zinc-500">⌘/Ctrl + Enter to download</span><div className="flex gap-1"><button onClick={handleSave} disabled={!output} className="icon-button disabled:opacity-30" title="Download result" aria-label="Download result"><Download size={15} /></button><button onClick={handleCopy} disabled={!output} className="icon-button disabled:opacity-30" title="Copy result" aria-label="Copy result">{copied ? <Check size={15} className="text-teal-300" /> : <Clipboard size={15} />}</button></div></div>
                 </Panel>
               </div>
 
               {error && <div role="alert" className="mt-4 flex items-center gap-2 rounded-xl border border-rose-400/20 bg-rose-400/10 px-3 py-2 text-sm text-rose-200"><X size={15} /> {error}</div>}
-              <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4"><button onClick={() => { setInput(output); setOutput(input); setMode(mode === 'encode' ? 'decode' : 'encode'); }} disabled={!input && !output} className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white disabled:opacity-30"><ArrowLeftRight size={15} /> Swap direction</button><span aria-live="polite" className="text-xs text-teal-300">{copied ? 'Copied to clipboard' : 'Instant conversion enabled'}</span></div>
+              <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4"><button onClick={swap} disabled={!output} className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white disabled:opacity-30"><ArrowLeftRight size={15} /> Swap direction</button><span aria-live="polite" className="text-xs text-teal-300">{copied ? 'Copied to clipboard' : 'Instant conversion enabled'}</span></div>
             </section>
           </section>
 
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[.03] p-4 sm:p-5">
-            <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-medium"><History size={16} className="text-teal-300" /> Recent work</div>{history.length > 0 && <button onClick={() => { setHistory([]); try { window.localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ } }} className="text-xs text-zinc-500 hover:text-white"><RotateCcw size={13} className="mr-1 inline" /> Clear</button>}</div>
+            <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-medium"><History size={16} className="text-teal-300" /> Recent work</div>{history.length > 0 && <button onClick={clearHistory} className="text-xs text-zinc-500 hover:text-white"><RotateCcw size={13} className="mr-1 inline" /> Clear</button>}</div>
             {history.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{history.map((entry) => <button key={entry.id} onClick={() => { setMode(entry.mode); setInput(entry.input); }} className="rounded-xl border border-white/5 bg-black/15 p-3 text-left transition hover:border-teal-300/30 hover:bg-white/5"><span className="block text-xs capitalize text-teal-300">{entry.mode}</span><span className="mt-1 block truncate font-mono text-xs text-zinc-400">{entry.input}</span></button>)}</div> : <p className="text-sm text-zinc-500">Copy or download a result and it will appear here. Your history stays on this device.</p>}
           </section>
+          <About />
           <footer className="flex flex-wrap justify-between gap-3 py-3 text-xs text-zinc-600"><span>Built for quick, private transformations.</span><a className="hover:text-zinc-300" href="https://dcesares.dev" target="_blank" rel="noreferrer">dcesares.dev</a></footer>
         </div>
       </main>
     </>
   );
-}
-
-function Panel({ label, meta, children }) {
-  return <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"><div className="flex items-center justify-between border-b border-white/5 px-4 py-3"><span className="text-sm font-medium text-zinc-200">{label}</span><span className="text-xs text-zinc-500">{meta}</span></div>{children}</div>;
 }

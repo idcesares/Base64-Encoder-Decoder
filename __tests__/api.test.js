@@ -6,6 +6,7 @@ function createMocks({ method = 'POST', body = {} } = {}) {
     statusCode: 0,
     jsonPayload: null,
     status(code) { this.statusCode = code; return this; },
+    setHeader() {},
     json(payload) { this.jsonPayload = payload; },
   };
   return { req, res };

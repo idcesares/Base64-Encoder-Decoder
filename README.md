@@ -13,6 +13,7 @@ This is a simple React-based web application that provides a user-friendly inter
 * **Unicode support:** Text is encoded/decoded with full Unicode compatibility.
 * **Server API:** Send POST requests to `/api/base64` with `{ text, action: "encode" | "decode", urlSafe?: boolean }`.
 * **Error handling:** The app gracefully handles invalid Base64 input during decoding, displaying a clear error message.
+* **Drag and drop** a text file onto the workbench to load it.
 * **Responsive and accessible design:** Keyboard focus outlines and ARIA attributes help ensure accessibility across different devices.
 
 ### Getting Started
@@ -49,17 +50,19 @@ This is a simple React-based web application that provides a user-friendly inter
 
 ### Dependencies
 
-* **Next.js / React:** Application framework and UI library.
-* **Tailwind CSS:** Styling.
+* **Next.js 16 / React 19:** Application framework and UI library.
+* **Tailwind CSS 4:** Styling.
 * **lucide-react:** Icons.
 * **@vercel/analytics:** Page analytics.
 
 ### Testing
 
-Run the Jest test suite with:
+Run the checks (also run in CI via GitHub Actions):
 
 ```bash
-pnpm test
+pnpm test   # Jest
+pnpm lint   # ESLint (flat config)
+pnpm build  # production build
 ```
 
 ### Contributing
